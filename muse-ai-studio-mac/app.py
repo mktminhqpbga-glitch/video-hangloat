@@ -22,6 +22,12 @@ Chay tren MacBook:
   Sau do mo http://127.0.0.1:8765 tren trinh duyet (app se tu mo neu
   duoc). Ghep video can ffmpeg: brew install ffmpeg.
 
+Chay tren Render (Docker, xem Dockerfile o goc repo):
+  Render tu dat bien PORT (va RENDER=true); app bind 0.0.0.0 va khong
+  tu mo trinh duyet. Co the ghi de dia chi bind bang bien HOST.
+  Du lieu local (tai khoan/du an/task) luu trong container nen se mat
+  khi service restart tren goi Free neu khong gan Disk tra phi.
+
 Chi dung thu vien chuan cua Python, khong can pip install gi them.
 Du lieu luu o ~/.muse-ai-studio-mac/ (config, tai khoan, du an, task).
 Mat khau chi luu dang hash SHA-256 + salt, khong luu plaintext.
@@ -449,18 +455,29 @@ class Handler(BaseHTTPRequestHandler):
 # ---------------------------------------------------------------- main
 
 def main():
+    # Render (va moi truong container) dat bien PORT; chay local mac dinh 8765.
+    # Bien RENDER=true do Render tu dat (Dockerfile cung dat) -> bind 0.0.0.0
+    # va khong tu mo trinh duyet. Bien HOST cho phep ghi de dia chi bind.
+    on_render = bool(os.environ.get("RENDER"))
     port = PORT
+    if os.environ.get("PORT"):
+        try:
+            port = int(os.environ["PORT"])
+        except ValueError:
+            pass
     if len(sys.argv) > 1:
         try:
             port = int(sys.argv[1])
         except ValueError:
             pass
-    server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
-    url = f"http://127.0.0.1:{port}"
+    host = os.environ.get("HOST", "0.0.0.0" if on_render else "127.0.0.1")
+    server = ThreadingHTTPServer((host, port), Handler)
+    url = f"http://{host}:{port}"
     print(f"Muse AI Studio (ban Mac) dang chay tai {url}")
     print(f"Du lieu local: {DATA_DIR}")
     print("Nhan Ctrl+C de dung.")
-    threading.Timer(1.0, lambda: webbrowser.open(url)).start()
+    if not on_render:
+        threading.Timer(1.0, lambda: webbrowser.open(url)).start()
     try:
         server.serve_forever()
     except KeyboardInterrupt:

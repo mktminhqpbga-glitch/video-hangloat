@@ -25,6 +25,19 @@ App sẽ tự mở `http://127.0.0.1:8765` trên trình duyệt. Dữ liệu lư
 `~/.muse-ai-studio-mac/` (cài đặt, tài khoản, dự án, task). Mật khẩu chỉ
 lưu dạng hash, không lưu plaintext.
 
+## Chạy trên Render (Docker)
+
+Repo có sẵn `Dockerfile` ở gốc (image `python:3.11-slim` + ffmpeg).
+Render tự đặt biến `PORT` và `RENDER=true` nên app bind `0.0.0.0` và
+không tự mở trình duyệt; không cần cấu hình thêm biến môi trường.
+Khi deploy trên Render, chọn Docker, Dockerfile mặc định ở gốc repo.
+
+Lưu ý: dữ liệu local (tài khoản, dự án, task) lưu trong container nên
+sẽ mất khi service restart trên gói Free nếu không gắn Disk trả phí.
+App không có đăng nhập mạnh cho giao diện public — chỉ dùng link
+Render cho mục đích demo/nội bộ, hoặc tự thêm lớp bảo vệ trước khi
+chia sẻ rộng rãi.
+
 ## Tính năng (theo đúng luồng bản gốc)
 
 - **Bản quyền**: Đăng ký mới bằng số điện thoại + mật khẩu để nhận dùng
